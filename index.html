@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proyecto de Cálculo</title>
+    <title>Calculadora de Límites y Derivadas (Definición Formal)</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        /* General styles */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1e2a78, #1e4769);
+            color: #f0f0f3;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        h2 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+            animation: bounceInDown 1s ease forwards;
+        }
+        .formula {
+            background: #2e3b84;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            font-size: 1.3rem;
+            font-weight: 600;
+            font-family: 'Times New Roman', serif;
+            color: #f6e27f;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            animation: fadeInDown 1s ease forwards;
+        }
+        label {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 10px;
+            display: block;
+            animation: fadeInLeft 1s ease forwards;
+        }
+        input[type="text"], input[type="number"] {
+            width: 300px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 0 8px rgba(246, 226, 127, 0.8);
+            background: #f7f7f7;
+            color: #20222f;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            cursor: text;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            box-shadow: 0 0 15px #f6e27f;
+            transform: scale(1.02);
+        }
+        button {
+            background: #f6e27f;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1e2a78;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(246, 226, 127, 0.6);
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        button:hover {
+            background: #d4c043;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(246, 226, 127, 0.9);
+        }
+        #resultado {
+            margin-top: 20px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f6e27f;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+            animation: fadeIn 1.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            animation-fill-mode: forwards;
+            animation-delay: 0.6s;
+        }
+        #resultado.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #grafica {
+            width: 100%;
+            max-width: 900px;
+            height: 450px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(30, 42, 120, 0.7);
+            margin-top: 30px;
+            animation: fadeInUp 1.8s ease forwards;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            animation-fill-mode: forwards;
+        }
+        #grafica.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #nombreGrafica {
+            margin-top: 10px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #f6e27f;
+            text-align: center;
+            font-style: italic;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            animation: fadeIn 1.8s ease forwards;
+            max-width: 900px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(10px);
+            animation-fill-mode: forwards;
+        }
+        #nombreGrafica.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-20px);}
+            to { opacity: 1; transform: translateX(0);}
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes bounceInDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-2000px);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(30px);
+            }
+            80% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 5px 15px rgba(246, 226, 127, 0.6);
+            }
+            50% {
+                box-shadow: 0 10px 30px rgba(246, 226, 127, 1);
+            }
+            100% {
+                box-shadow: 0 5px 15px rgba(246, 226, 127, 0.6);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Proyecto de Cálculo</h2>
+    <h2>Calculadora de Límites y Derivadas (Definición Formal)</h2>
+
+    <div class="formula" aria-label="Fórmula de la derivada">
+        <p>La derivada de <em>f</em>(<em>x</em>) en el punto <em>x₀</em> se define como:</p>
+        <p style="font-size: 1.6rem; color: #fff; margin: 5px 0;"> 
+            <strong>f&apos;</strong>(x<sub>0</sub>) = <em>lim</em><sub>h→0</sub> 
+            <span style="background: #f6e27f33; padding: 2px 8px; border-radius: 6px;">(f(x<sub>0</sub> + h) - f(x<sub>0</sub>)) / h</span>
+        </p>
+    </div>
+
+    <label for="funcion">Función f(x):</label>
+    <input type="text" id="funcion" value="x*x" autocomplete="off" />
+
+    <label for="punto">Punto donde calcular derivada (x₀):</label>
+    <input type="number" id="punto" value="2" />
+
+    <button onclick="calcular()">Calcular derivada y graficar</button>
+
+    <div id="resultado"></div>
+    <div id="grafica"></div>
+    <div id="nombreGrafica"></div>
+
+    <script>
+        function f(x, expr) {
+            try {
+                return Function('x', 'return ' + expr)(x);
+            } catch(e) {
+                return NaN;
+            }
+        }
+
+        function derivadaDefinicionFormal(expr, x0, h=1e-6) {
+            return (f(x0 + h, expr) - f(x0, expr)) / h;
+        }
+
+        function nombreFuncion(expr) {
+            let nombre = expr.trim().toLowerCase();
+
+            nombre = nombre.replace(/math\./g, '');
+
+            const patrones = [
+                {pattern: /^x\s*\*\s*x$/, name: 'Función cuadrática (x²)'},
+                {pattern: /^x\s*\*\s*x\s*\*\s*x$/, name: 'Función cúbica (x³)'},
+                {pattern: /^3\s*\*\s*x\s*\+\s*5$/, name: 'Función lineal (3x + 5)'},
+                {pattern: /^x$/, name: 'Función identidad (x)'},
+                {pattern: /^sin\(x\)$/, name: 'Función seno (sin x)'},
+                {pattern: /^cos\(x\)$/, name: 'Función coseno (cos x)'},
+                {pattern: /^tan\(x\)$/, name: 'Función tangente (tan x)'},
+                {pattern: /^exp\(x\)$/, name: 'Función exponencial (e^x)'},
+                {pattern: /^log\(x\)$/, name: 'Función logaritmo natural (ln x)'},
+                {pattern: /^x\s*\*\s*x\s*\+\s*1$/, name: 'Función polinómica (x² + 1)'},
+                {pattern: /^x\s*\*\s*x\s*\*\s*sin\(x\)$/, name: 'Función compuesta (x² * sin x)'},
+                {pattern: /^\(\s*x\s*\*\s*x\s*\+\s*1\s*\)\/\(x\s*-\s*1\s*\)$/, name: 'Función racional ((x² + 1) / (x - 1))'}
+            ];
+
+            for (let i = 0; i < patrones.length; i++) {
+                if (patrones[i].pattern.test(nombre)) {
+                    return patrones[i].name;
+                }
+            }
+
+            let compacta = expr.replace(/\s/g, '').substring(0, 40);
+            if (expr.length > 40) compacta += '...';
+            return 'Función: ' + compacta;
+        }
+
+        function animarElementos() {
+            document.getElementById('resultado').classList.add('visible');
+            document.getElementById('grafica').classList.add('visible');
+            document.getElementById('nombreGrafica').classList.add('visible');
+        }
+
+        function calcular() {
+            const expr = document.getElementById('funcion').value;
+            const x0 = parseFloat(document.getElementById('punto').value);
+
+            const derivada = derivadaDefinicionFormal(expr, x0);
+
+            const resultadoElm = document.getElementById('resultado');
+            resultadoElm.innerHTML = 
+                `<b>Derivada de f(x) en x = ${x0.toFixed(2)} es aproximadamente: ${derivada.toFixed(6)}</b>`;
+            resultadoElm.classList.remove('visible');
+
+            const xValues = [];
+            const yValues = [];
+            const tangentValues = [];
+
+            for(let x = x0 - 5; x <= x0 + 5; x += 0.05) {
+                xValues.push(x);
+                yValues.push(f(x, expr));
+                tangentValues.push(derivada * (x - x0) + f(x0, expr));
+            }
+
+            const funcTrace = {
+                x: xValues,
+                y: yValues,
+                mode: 'lines',
+                name: 'f(x)',
+                line: {color: '#f6e27f'}
+            };
+
+            const tangentTrace = {
+                x: xValues,
+                y: tangentValues,
+                mode: 'lines',
+                name: 'Tangente en x₀',
+                line: {dash: 'dash', color: '#e07b39'}
+            };
+
+            const puntoTrace = {
+                x: [x0],
+                y: [f(x0, expr)],
+                mode: 'markers',
+                name: 'Punto (x₀, f(x₀))',
+                marker: {color: '#e63946', size: 12}
+            };
+
+            const layout = {
+                paper_bgcolor: '#1e2a78',
+                plot_bgcolor: '#1e4769',
+                title: {text: `Gráfica de f(x) y su tangente en x = ${x0}`, font: {color: '#f0f0f3'}},
+                xaxis: {title: 'x', color: '#f0f0f3', gridcolor: '#2e3b84'},
+                yaxis: {title: 'y', color: '#f0f0f3', gridcolor: '#2e3b84'},
+                legend: {font: {color: '#f6e27f'}},
+                margin: {t: 50, b: 50, l: 70, r: 40}
+            };
+
+            Plotly.newPlot('grafica', [funcTrace, tangentTrace, puntoTrace], layout, {responsive: true})
+            .then(animarElementos);
+
+            const nombreGrafica = document.getElementById('nombreGrafica');
+            nombreGrafica.textContent = nombreFuncion(expr);
+            nombreGrafica.classList.remove('visible');
+        }
+
+        // Actualiza nombre al cambiar texto y resetea animaciones
+        document.getElementById('funcion').addEventListener('input', () => {
+            const expr = document.getElementById('funcion').value;
+            const nombreGrafica = document.getElementById('nombreGrafica');
+            nombreGrafica.textContent = nombreFuncion(expr);
+            nombreGrafica.classList.remove('visible');
+        });
+
+        // Inicializa gráfica y animaciones al cargar la página
+        window.onload = () => {
+            calcular();
+        };
+    </script>
+</body>
+</html>
